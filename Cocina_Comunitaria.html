@@ -1,0 +1,203 @@
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { PlusCircle, Upload } from "lucide-react";
+import { motion } from "framer-motion";
+
+const recetasEjemplo = [
+  {
+    nombre: "Ensalada Mediterránea",
+    categoria: "vegetariana",
+    ingredientes: [
+      { nombre: "Tomate", cantidad: "2 unidades" },
+      { nombre: "Pepino", cantidad: "1 unidad" },
+      { nombre: "Aceite de oliva", cantidad: "2 cucharadas" }
+    ],
+    pasos: [
+      "Lavar y cortar los ingredientes.",
+      "Mezclar todo en un bol.",
+      "Aliñar con aceite de oliva."
+    ],
+    imagen: "https://images.unsplash.com/photo-1566843970160-cd2d2eecb6ae"
+  },
+  {
+    nombre: "Tacos sin gluten",
+    categoria: "sin-gluten",
+    ingredientes: [
+      { nombre: "Tortillas de maíz", cantidad: "4 unidades" },
+      { nombre: "Carne de res", cantidad: "200g" },
+      { nombre: "Cilantro", cantidad: "al gusto" },
+      { nombre: "Cebolla", cantidad: "1 unidad picada" }
+    ],
+    pasos: [
+      "Calentar las tortillas.",
+      "Cocinar la carne a gusto.",
+      "Servir con cebolla y cilantro."
+    ],
+    imagen: "https://images.unsplash.com/photo-1613145998572-b4c4d5a1d233"
+  },
+  {
+    nombre: "Bowl vegano de quinoa",
+    categoria: "vegetariana",
+    ingredientes: [
+      { nombre: "Quinoa cocida", cantidad: "1 taza" },
+      { nombre: "Aguacate", cantidad: "1/2 unidad" },
+      { nombre: "Garbanzos cocidos", cantidad: "1/2 taza" },
+      { nombre: "Espinaca fresca", cantidad: "1 taza" }
+    ],
+    pasos: [
+      "Disponer la quinoa como base del bowl.",
+      "Agregar los demás ingredientes por encima.",
+      "Aliñar con limón y aceite de oliva."
+    ],
+    imagen: "https://images.unsplash.com/photo-1572448862528-1b5b2e9b017d"
+  }
+];
+
+export default function CocinaComunitaria() {
+  const [filtro, setFiltro] = useState("todas");
+  const [busqueda, setBusqueda] = useState("");
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [recetas, setRecetas] = useState(recetasEjemplo);
+
+  const recetasFiltradas = recetas.filter((receta) => {
+    const coincideCategoria =
+      filtro === "todas" || receta.categoria === filtro;
+    const coincideBusqueda = receta.nombre
+      .toLowerCase()
+      .includes(busqueda.toLowerCase());
+    return coincideCategoria && coincideBusqueda;
+  });
+
+  const agregarReceta = (e) => {
+    e.preventDefault();
+    const nuevaReceta = {
+      nombre: e.target.nombre.value,
+      categoria: e.target.categoria.value,
+      imagen: URL.createObjectURL(e.target.imagen.files[0]),
+      ingredientes: e.target.ingredientes.value.split("\n").map((linea) => {
+        const [nombre, cantidad] = linea.split(" - ");
+        return { nombre, cantidad };
+      }),
+      pasos: e.target.pasos.value.split("\n")
+    };
+    setRecetas([...recetas, nuevaReceta]);
+    setMostrarFormulario(false);
+  };
+
+  return (
+    <div
+      className="p-4 min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-red-100 bg-fixed"
+      style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1504674900247-0877df9cc836")', backgroundSize: 'cover', backgroundRepeat: 'no-repeat', backgroundAttachment: 'fixed' }}
+    >
+      <div className="bg-white bg-opacity-80 rounded-2xl shadow-xl p-6 max-w-4xl mx-auto">
+        <h1 className="text-4xl font-extrabold text-center mb-6 text-red-700">
+          🍲 Cocina Comunitaria
+        </h1>
+
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-6">
+          <Input
+            type="text"
+            placeholder="Buscar recetas..."
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            className="flex-grow bg-white"
+          />
+          <div className="flex gap-2">
+            <Button onClick={() => setFiltro("todas")} className="bg-orange-400 text-white hover:bg-orange-500">Todas</Button>
+            <Button onClick={() => setFiltro("vegetariana")} className="bg-green-500 text-white hover:bg-green-600">Vegetarianas</Button>
+            <Button onClick={() => setFiltro("sin-gluten")} className="bg-purple-500 text-white hover:bg-purple-600">Sin Gluten</Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {recetasFiltradas.map((receta, index) => (
+            <Card key={index} className="bg-white bg-opacity-90 shadow-lg">
+              <CardContent className="p-4">
+                <img
+                  src={receta.imagen}
+                  alt={receta.nombre}
+                  className="w-full h-48 object-cover rounded-xl mb-2"
+                />
+                <h2 className="text-2xl font-bold text-red-600">{receta.nombre}</h2>
+                <p className="text-sm text-gray-600 capitalize">
+                  Categoría: {receta.categoria}
+                </p>
+                <h3 className="mt-2 font-medium text-yellow-800">Ingredientes:</h3>
+                <ul className="list-disc pl-5 text-sm">
+                  {receta.ingredientes.map((ing, i) => (
+                    <li key={i}>
+                      {ing.nombre}: {ing.cantidad}
+                    </li>
+                  ))}
+                </ul>
+                <h3 className="mt-2 font-medium text-yellow-800">Pasos:</h3>
+                <ol className="list-decimal pl-5 text-sm">
+                  {receta.pasos.map((paso, i) => (
+                    <li key={i}>{paso}</li>
+                  ))}
+                </ol>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div className="fixed bottom-4 right-4">
+          <Button
+            onClick={() => setMostrarFormulario(true)}
+            className="rounded-full px-6 py-4 text-white bg-pink-500 hover:bg-pink-600 shadow-xl flex items-center gap-2"
+          >
+            <PlusCircle className="w-6 h-6" /> Subir receta
+          </Button>
+        </div>
+
+        {mostrarFormulario && (
+          <motion.div
+            className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <form
+              onSubmit={agregarReceta}
+              className="bg-white p-6 rounded-xl w-full max-w-md space-y-4 shadow-2xl"
+            >
+              <h2 className="text-xl font-bold mb-2 text-red-700">Subir nueva receta</h2>
+              <Input name="nombre" placeholder="Nombre de la receta" required />
+              <select
+                name="categoria"
+                className="w-full p-2 border rounded-md"
+                required
+              >
+                <option value="vegetariana">Vegetariana</option>
+                <option value="sin-gluten">Sin Gluten</option>
+                <option value="todas">Otra</option>
+              </select>
+              <Input type="file" name="imagen" accept="image/*" required />
+              <textarea
+                name="ingredientes"
+                placeholder="Ingredientes (uno por línea, formato: ingrediente - cantidad)"
+                className="w-full p-2 border rounded-md h-24"
+                required
+              ></textarea>
+              <textarea
+                name="pasos"
+                placeholder="Pasos a seguir (uno por línea)"
+                className="w-full p-2 border rounded-md h-24"
+                required
+              ></textarea>
+              <div className="flex justify-end gap-2">
+                <Button type="button" onClick={() => setMostrarFormulario(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" className="bg-green-500 hover:bg-green-600 text-white">
+                  <Upload className="w-4 h-4 mr-2" /> Subir Receta
+                </Button>
+              </div>
+            </form>
+          </motion.div>
+        )}
+      </div>
+    </div>
+  );
+}
